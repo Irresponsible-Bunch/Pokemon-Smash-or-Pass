@@ -40,7 +40,7 @@ def take_screenshot():
         path = os.path.join(output_folder, f"screenshot_{timestamp}.png")
         img.save(path)
         capture_result['path'] = path
-        show_image(path)
+        show_image(path,f"screenshot_{timestamp}.png")
 
     overlay.bind("<ButtonPress-1>", on_mouse_down)
     overlay.bind("<ButtonRelease-1>", on_mouse_up)
@@ -54,7 +54,7 @@ def save_score(image_path, score):
     print(f"Score for {image_path} saved.")
 
 # Display image and prompt for score
-def show_image(image_path):
+def show_image(image_path,image_name):
     image = Image.open(image_path)
     image = image.resize((300, 300))
     img = ImageTk.PhotoImage(image)
@@ -67,7 +67,7 @@ def show_image(image_path):
             print(score_entry)
             score = float(score_entry.get())
             if 0 <= score <= 10:
-                save_score(image_path, score)
+                save_score(image_name, score)
                 score_entry.delete(0, 'end')
             else:
                 print("Score must be between 0 and 10.")
