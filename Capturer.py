@@ -52,8 +52,6 @@ class Capture(QWidget):
             clipboard = QApplication.clipboard()
             clipboard.setPixmap(self.imgmap)
 
-            self.imgmap.save("TEST.png")
-
             self.main.label.setPixmap(self.imgmap)
             self.main.show()
 
