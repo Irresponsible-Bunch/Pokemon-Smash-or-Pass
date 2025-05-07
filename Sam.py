@@ -1,4 +1,6 @@
 # sam_helper.py
+import io
+from os import remove
 import torch
 import numpy as np
 import cv2
@@ -83,3 +85,62 @@ def post_process_mask(mask):
     mask = (mask > 0.5).astype(np.uint8) * 255  # Threshold back to binary
     
     return mask
+from rembg import remove
+from PIL import Image
+import io
+
+def remove_background_grabcut(pil_image, foreground_point=None, invert=False):
+    """
+    Remove background using only OpenCV GrabCut based on a foreground point.
+    """
+    image = np.array(pil_image.convert("RGB"))
+    h, w = image.shape[:2]
+
+    if foreground_point is None:
+        foreground_point = (w // 2, h // 2)
+
+    # Initial mask: probable background everywhere
+    mask = np.full((h, w), cv2.GC_PR_BGD, dtype=np.uint8)
+
+    # Mark a small region around the point as probable foreground
+    px, py = foreground_point
+    r = 5
+    mask[max(0, py - r):min(h, py + r), max(0, px - r):min(w, px + r)] = cv2.GC_PR_FGD
+
+    # Init models
+    bgd_model = np.zeros((1, 65), np.float64)
+    fgd_model = np.zeros((1, 65), np.float64)
+
+    # Run GrabCut
+    cv2.grabCut(image, mask, None, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_MASK)
+
+    # Final mask
+    result_mask = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
+
+    # Post-process for smooth edges
+    result_mask = post_process_mask(result_mask)
+
+    if invert:
+        result_mask = ~result_mask
+
+    rgba = np.dstack((image, result_mask))
+    return Image.fromarray(rgba)
+
+
+def remove_background_rembg(pil_image, post_process=True):
+    img_byte_arr = io.BytesIO()
+    pil_image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+    
+    try:
+        # Remove background
+        result_bytes = remove(img_byte_arr, post_process=post_process)
+        
+        # Convert back to PIL Image
+        result_image = Image.open(io.BytesIO(result_bytes))
+        return result_image
+    except Exception as e:
+        print(f"Error in background removal: {e}")
+        return pil_image  # Return original if error occurs
+    
+    
