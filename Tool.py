@@ -66,7 +66,7 @@ def take_screenshot():
         
         img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
         timestamp = int(time.time())
-        image_name = f"screenshot_{timestamp}.png"
+        image_name = f"screenshot_{timestamp}"
         
         global current_image, current_image_name
         current_image = img
