@@ -8,7 +8,7 @@ import pandas as pd
 from Sam import remove_background_grabcut, remove_background_rembg, remove_background_sam
 
 # Define paths
-output_folder = r"C:\Users\user\Desktop"
+output_folder = r"images"
 csv_file = r"C:\Users\user\Desktop\Pokemon-Smash-or-Pass\pokemon_data.csv"
 
 current_image = None
